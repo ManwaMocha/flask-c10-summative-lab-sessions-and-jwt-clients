@@ -41,6 +41,33 @@ def get_note(note_id):
 
     return jsonify(note.to_dict()), 200
 
+#Create a new note
+@notes_bp.post('/notes')
+@login_required
+def create_note():
+    data = request.get_json(silent=True) or {} 
+
+    title = data.get('title')
+    content = data.get('content')
+
+    if not isinstance(title, str) or not title.strip() or len(title.strip()) > 150:
+        return jsonify({'error': 'Title must be 1-150 characters'}), 400
+
+    if not isinstance(content, str) or not content.strip():
+        return jsonify({'error': 'Content is required'}), 400
+
+    note = Note(
+        title=title.strip(),
+        content=content.strip(),
+        user_id=session['user_id']
+    )
+
+    db.session.add(note)
+    db.session.commit()
+
+    return jsonify(note.to_dict()), 201
+
+
 
 
 
