@@ -67,6 +67,36 @@ def create_note():
 
     return jsonify(note.to_dict()), 201
 
+#Update an existing route
+@notes_bp.patch('/notes/<int:note_id>')
+@login_required
+def update_note(note_id):
+    note = owned_note(note_id)
+
+    if note is None:
+        return jsonify({'error': 'Note not found'}), 404
+
+    data = request.get_json(silent=True) or {}
+
+    if 'title' not in data and 'content' not in data:
+        return jsonify({'error': 'Provide a title or content to update'}), 400
+
+    if 'title' in data:
+        title = data['title']
+        if not isinstance(title, str) or not title.strip() or len(title.strip()) > 150:
+            return jsonify({'error': 'Title must be 1-150 characters'}), 400
+        note.title = title.strip()
+
+    if 'content' in data:
+        content = dat['content']
+        if not isinstance(content, str) or not content.strip():
+            return jsonify({'error': 'Content is required'}), 400
+        note.content = content.strip()
+
+        db.session.commit()
+
+        return jsonify(note.to_dict()), 200
+
 
 
 
