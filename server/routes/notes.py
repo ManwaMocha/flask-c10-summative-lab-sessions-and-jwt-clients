@@ -30,5 +30,17 @@ def get_notes():
             'pages': result.page
         }), 200
 
+#Get one note
+@notes_bp.get('/notes/<int:note_id>')
+@login_required
+def get_note(note_id):
+    note = owned_note(note_id)
+
+    if note is None:
+        return jsonify({'error': 'Note not found'}), 404
+
+    return jsonify(note.to_dict()), 200
+
+
 
 
