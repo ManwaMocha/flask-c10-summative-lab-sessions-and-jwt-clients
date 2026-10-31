@@ -15,19 +15,19 @@ def get_notes():
     if options is None:
         return jsonify({'error': 'Use page >= 1 and per_page between 1 and 100'}), 400
 
-        page, per_page = options
+    page, per_page = options
 
-        #Get only the logged-in user's notes
-        query = Note.query.filter_by(user_id=session['user_id']).order_by(Note.id.asc())
+    #Get only the logged-in user's notes
+    query = Note.query.filter_by(user_id=session['user_id']).order_by(Note.id.asc())
 
-        result = db.paginate (query, page=page, per_page=per_page, error_out=False)
+    result = db.paginate(query, page=page, per_page=per_page, error_out=False)
 
-        return jsonify({
+    return jsonify({
             'notes': [note.to_dict() for note in result.items],
             'page': page,
             'per_page': per_page,
             'total': result.total,
-            'pages': result.page
+            'pages': result.pages
         }), 200
 
 #Get one note
@@ -67,7 +67,7 @@ def create_note():
 
     return jsonify(note.to_dict()), 201
 
-#Update an existing route
+#Update an existing note
 @notes_bp.patch('/notes/<int:note_id>')
 @login_required
 def update_note(note_id):
@@ -88,14 +88,29 @@ def update_note(note_id):
         note.title = title.strip()
 
     if 'content' in data:
-        content = dat['content']
+        content = data['content']
         if not isinstance(content, str) or not content.strip():
             return jsonify({'error': 'Content is required'}), 400
         note.content = content.strip()
 
-        db.session.commit()
+    db.session.commit()
 
-        return jsonify(note.to_dict()), 200
+    return jsonify(note.to_dict()), 200
+
+#Delete a note
+@notes_bp.delete('/notes/<int:note_id>')
+@login_required
+def delete_note(note_id):
+    note = owned_note(note_id)
+
+    if note is None:
+        return jsonify({'error': 'Note not found'}), 404
+
+    db.session.delete(note)
+    db.session.commit()
+
+    return '', 204
+
 
 
 
