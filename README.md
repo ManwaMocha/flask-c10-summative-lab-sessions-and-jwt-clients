@@ -35,7 +35,7 @@ project-root/
 │   ├── seed.py
 │   ├── requirements.txt
 │   └── routes/
-│       ├── auth.py
+│       ├── security.py
 │       └── notes.py
 ├── README.md
 ├── TESTING.md
@@ -75,6 +75,30 @@ source venv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
+## Database Setup
+
+After installing dependencies, run:
+
+```bash
+python -m flask --app app db upgrade
+```
+
+This creates the database tables.
+
+## Seed Sample Data
+
+To add sample users and notes, run:
+
+```bash
+python seed.py
+```
+
+Demo accounts:
+
+| Username | Password |
+|---|---|
+| john | password123 |
+| mary | password456 |
 
 ## Running the Backend
 
@@ -99,7 +123,38 @@ Users must log in before accessing protected notes functionality. Each user shou
 API endpoints can be tested using Postman or curl.
 
 See `TESTING.md` for the manual testing instructions and expected API behaviour.
+## API Endpoints
 
+### Authentication
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | /signup | Register a user |
+| POST | /login | Log in |
+| GET | /check_session | Check login session |
+| DELETE | /logout | Log out |
+
+### Notes
+
+All notes endpoints require login.
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | /notes | Get notes |
+| GET | /notes/<int:note_id> | Get one note |
+| POST | /notes | Create a note |
+| PATCH | /notes/<int:note_id> | Update a note |
+| DELETE | /notes/<int:note_id> | Delete a note |
+
+### Pagination
+
+Use page and per_page to control results.
+
+Example:
+
+```text
+GET /notes?page=1&per_page=10
+```
 ## Contributors
 
 This project was developed collaboratively by a five-member Moringa School group.
