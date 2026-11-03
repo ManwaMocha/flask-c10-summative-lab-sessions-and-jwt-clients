@@ -20,7 +20,7 @@ def get_notes():
     #Get only the logged-in user's notes
     query = Note.query.filter_by(user_id=session['user_id']).order_by(Note.id.asc())
 
-    result = db.paginate(query, page=page, per_page=per_page, error_out=False)
+    result = query.paginate( page=page, per_page=per_page, error_out=False)
 
     return jsonify({
             'notes': [note.to_dict() for note in result.items],
