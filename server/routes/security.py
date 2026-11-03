@@ -35,4 +35,4 @@ def pagination_options(args):
     if page < 1 or per_page < 1 or per_page > 100:
         return None
 
-    return page, per_pageB
+    return page, per_page
