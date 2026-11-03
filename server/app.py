@@ -14,6 +14,10 @@ db.init_app(app)
 migrate.init_app(app, db)
 bcrypt.init_app(app)
 
+from routes.notes import notes_bp #import routes
+
+app.register_blueprint(notes_bp)#connects that collection to flask app
+
 # Import database models
 import models
 
