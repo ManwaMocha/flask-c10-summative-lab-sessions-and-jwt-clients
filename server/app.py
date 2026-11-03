@@ -1,5 +1,6 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, session, request
 from config import db, migrate, bcrypt
+from models import User
 
 app = Flask(__name__)
 
