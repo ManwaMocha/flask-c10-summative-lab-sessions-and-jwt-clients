@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, session
 from config import db
-from models import Note
+from models import Note, Category
 from routes.security import login_required, owned_note, pagination_options
 
 #Groups all Notes-related routes together
@@ -42,13 +42,16 @@ def get_note(note_id):
     return jsonify(note.to_dict()), 200
 
 #Create a new note
+
+# Create a new note
 @notes_bp.post('/notes')
 @login_required
 def create_note():
-    data = request.get_json(silent=True) or {} 
+    data = request.get_json(silent=True) or {}
 
     title = data.get('title')
     content = data.get('content')
+    category_id = data.get('category_id')
 
     if not isinstance(title, str) or not title.strip() or len(title.strip()) > 150:
         return jsonify({'error': 'Title must be 1-150 characters'}), 400
@@ -56,10 +59,21 @@ def create_note():
     if not isinstance(content, str) or not content.strip():
         return jsonify({'error': 'Content is required'}), 400
 
+    # Check if the selected category exists
+    if category_id is not None:
+        if type(category_id) is not int:
+            return jsonify({'error': 'Category ID must be an integer'}), 400
+
+        category = db.session.get(Category, category_id)
+
+        if category is None:
+            return jsonify({'error': 'Category not found'}), 404
+
     note = Note(
         title=title.strip(),
         content=content.strip(),
-        user_id=session['user_id']
+        user_id=session['user_id'],
+        category_id=category_id
     )
 
     db.session.add(note)
@@ -68,6 +82,8 @@ def create_note():
     return jsonify(note.to_dict()), 201
 
 #Update an existing note
+
+# Update an existing note
 @notes_bp.patch('/notes/<int:note_id>')
 @login_required
 def update_note(note_id):
@@ -78,24 +94,43 @@ def update_note(note_id):
 
     data = request.get_json(silent=True) or {}
 
-    if 'title' not in data and 'content' not in data:
-        return jsonify({'error': 'Provide a title or content to update'}), 400
+    if not any(key in data for key in ['title', 'content', 'category_id']):
+        return jsonify({'error': 'Provide a field to update'}), 400
 
     if 'title' in data:
         title = data['title']
+
         if not isinstance(title, str) or not title.strip() or len(title.strip()) > 150:
             return jsonify({'error': 'Title must be 1-150 characters'}), 400
+
         note.title = title.strip()
 
     if 'content' in data:
         content = data['content']
+
         if not isinstance(content, str) or not content.strip():
             return jsonify({'error': 'Content is required'}), 400
+
         note.content = content.strip()
+
+    if 'category_id' in data:
+        category_id = data['category_id']
+
+        if category_id is not None:
+            if type(category_id) is not int:
+                return jsonify({'error': 'Category ID must be an integer'}), 400
+
+            category = db.session.get(Category, category_id)
+
+            if category is None:
+                return jsonify({'error': 'Category not found'}), 404
+
+        note.category_id = category_id
 
     db.session.commit()
 
     return jsonify(note.to_dict()), 200
+
 
 #Delete a note
 @notes_bp.delete('/notes/<int:note_id>')

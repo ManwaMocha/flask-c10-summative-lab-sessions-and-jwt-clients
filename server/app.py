@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, session, request
 from config import db, migrate, bcrypt
-from models import User
+from models import User, Note, Category
+from routes.security import login_required
 import os
 
 app = Flask(
@@ -100,6 +101,15 @@ def logout():
     session.pop("user_id", None)
 
     return jsonify({}), 200
+
+@app.get('/categories')
+@login_required
+def get_categories():
+    categories = Category.query.all()#python objects
+#change to py dict and then jsonify to display as json 
+    return jsonify([category.to_dict() for category in categories]), 200
+
+
 
     
 
