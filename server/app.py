@@ -1,8 +1,12 @@
 from flask import Flask, jsonify, session, request
 from config import db, migrate, bcrypt
 from models import User
+import os
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    instance_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), "instance")
+)
 
 # Application configuration
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///app.db"
